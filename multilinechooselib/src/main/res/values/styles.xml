@@ -1,0 +1,33 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <!--https://github.com/jackuhan/FlowlayoutTags-->
+    <style name="MultiLineChooseItemTags">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="tag_textColor">#49C120</item>
+        <item name="tag_backgroundColor">#FFFFFF</item>
+        <item name="tag_checkedTextColor">#FFFFFF</item>
+        <item name="tag_checkedBackgroundColor">#49C120</item>
+        <item name="tag_textSize">13sp</item>
+        <item name="tag_horizontalSpacing">5dp</item>
+        <item name="tag_verticalSpacing">5dp</item>
+        <item name="tag_horizontalPadding">12dp</item>
+        <item name="tag_verticalPadding">3dp</item>
+        <item name="tag_radius">5dp</item>
+        <item name="tag_checkedStrokeColor">#49C120</item>
+        <item name="tag_strokeWidth">1px</item>
+        <item name="tag_multiChooseable">true</item>
+        <item name="tag_singleLine">true</item>
+        <item name="tag_width">85</item>
+        <item name="tag_height">30</item>
+    </style>
+
+</resources>
