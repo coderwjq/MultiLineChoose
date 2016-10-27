@@ -1,8 +1,5 @@
 package com.ihidea.multilinechooselib;
 
-import android.animation.Animator;
-import android.animation.ArgbEvaluator;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
@@ -15,16 +12,11 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputConnectionWrapper;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -48,16 +40,6 @@ public class MultiLineChooseLayout extends ViewGroup {
     private final int default_background_color = Color.WHITE;
     
     /**
-     * 默认的内嵌文字颜色
-     */
-    private final int default_input_hint_color = Color.argb(0x80, 0x00, 0x00, 0x00);
-    
-    /**
-     * 默认的输入文字颜色
-     */
-    private final int default_input_text_color = Color.argb(0xDE, 0x00, 0x00, 0x00);
-    
-    /**
      * 默认的选中文字颜色
      */
     private final int default_checked_text_color = Color.WHITE;
@@ -66,11 +48,6 @@ public class MultiLineChooseLayout extends ViewGroup {
      *默认的选中背景颜色
      */
     private final int default_checked_background_color = Color.rgb(0x49, 0xC1, 0x20);
-    
-    /**
-     *默认的点击背景颜色
-     */
-    private final int default_pressed_background_color = Color.rgb(0xED, 0xED, 0xED);
     
     /**
      *默认的文字大小
@@ -101,9 +78,9 @@ public class MultiLineChooseLayout extends ViewGroup {
     
     private int backgroundColor;
     
-    private int checkedTextColor;
+    private int selectedTextColor;
     
-    private int checkedBackgroundColor;
+    private int selectedBackgroundColor;
     
     private float textSize;
     
@@ -115,9 +92,9 @@ public class MultiLineChooseLayout extends ViewGroup {
     
     private int verticalPadding;
     
-    private int tagWidth, tagHeight;
+    private int itemWidth, itemHeight;
     
-    private int tagMaxEms;
+    private int itemMaxEms;
     
     private boolean multiChooseable, singleLine;
     
@@ -130,11 +107,9 @@ public class MultiLineChooseLayout extends ViewGroup {
     
     private int mStrokeWidth = 0;
     
-    private OnTagChangeListener mOnTagChangeListener;
+    private onItemClickListener mOnItemClickLisener;
     
-    private OnTagClickListener mOnTagClickListener;
-    
-    private InternalTagClickListener mInternalTagClickListener = new InternalTagClickListener();
+    private ItemClicker mInternalTagClickListener = new ItemClicker();
     
     public MultiLineChooseLayout(Context context) {
         this(context, null);
@@ -157,47 +132,47 @@ public class MultiLineChooseLayout extends ViewGroup {
                 defStyleAttr,
                 R.style.MultiLineChooseItemTags);
         try {
-            textColor = attrsArray.getColor(R.styleable.MultiLineChooseItemTags_tag_textColor, default_text_color);
-            backgroundColor = attrsArray.getColor(R.styleable.MultiLineChooseItemTags_tag_backgroundColor,
+            textColor = attrsArray.getColor(R.styleable.MultiLineChooseItemTags_item_textColor, default_text_color);
+            backgroundColor = attrsArray.getColor(R.styleable.MultiLineChooseItemTags_item_backgroundColor,
                     default_background_color);
-            checkedTextColor = attrsArray.getColor(R.styleable.MultiLineChooseItemTags_tag_checkedTextColor,
+            selectedTextColor = attrsArray.getColor(R.styleable.MultiLineChooseItemTags_item_selectedTextColor,
                     default_checked_text_color);
-            checkedBackgroundColor = attrsArray.getColor(R.styleable.MultiLineChooseItemTags_tag_checkedBackgroundColor,
-                    default_checked_background_color);
-            textSize = attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_tag_textSize, default_text_size);
-            horizontalSpacing = (int) attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_tag_horizontalSpacing,
-                    default_horizontal_spacing);
-            verticalSpacing = (int) attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_tag_verticalSpacing,
+            selectedBackgroundColor = attrsArray.getColor(
+                    R.styleable.MultiLineChooseItemTags_item_selectedBackgroundColor, default_checked_background_color);
+            textSize = attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_item_textSize, default_text_size);
+            horizontalSpacing = (int) attrsArray.getDimension(
+                    R.styleable.MultiLineChooseItemTags_item_horizontalSpacing, default_horizontal_spacing);
+            verticalSpacing = (int) attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_item_verticalSpacing,
                     default_vertical_spacing);
-            horizontalPadding = (int) attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_tag_horizontalPadding,
-                    default_horizontal_padding);
-            verticalPadding = (int) attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_tag_verticalPadding,
+            horizontalPadding = (int) attrsArray.getDimension(
+                    R.styleable.MultiLineChooseItemTags_item_horizontalPadding, default_horizontal_padding);
+            verticalPadding = (int) attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_item_verticalPadding,
                     default_vertical_padding);
-            multiChooseable = attrsArray.getBoolean(R.styleable.MultiLineChooseItemTags_tag_multiChooseable, true);
-            singleLine = attrsArray.getBoolean(R.styleable.MultiLineChooseItemTags_tag_singleLine, false);
-            tagWidth = attrsArray.getInt(R.styleable.MultiLineChooseItemTags_tag_width,
+            multiChooseable = attrsArray.getBoolean(R.styleable.MultiLineChooseItemTags_item_multiChooseable, true);
+            singleLine = attrsArray.getBoolean(R.styleable.MultiLineChooseItemTags_item_singleLine, false);
+            itemWidth = attrsArray.getInt(R.styleable.MultiLineChooseItemTags_item_width,
                     MultiLineChooseLayout.LayoutParams.WRAP_CONTENT);
-            if (tagWidth >= 0) {
-                tagWidth = sp2px(tagWidth);
+            if (itemWidth >= 0) {
+                itemWidth = sp2px(itemWidth);
             }
-            tagHeight = attrsArray.getInt(R.styleable.MultiLineChooseItemTags_tag_height,
+            itemHeight = attrsArray.getInt(R.styleable.MultiLineChooseItemTags_item_height,
                     MultiLineChooseLayout.LayoutParams.WRAP_CONTENT);
-            if (tagHeight >= 0) {
-                tagHeight = sp2px(tagHeight);
+            if (itemHeight >= 0) {
+                itemHeight = sp2px(itemHeight);
             }
             
-            tagMaxEms = attrsArray.getInt(R.styleable.MultiLineChooseItemTags_tag_maxEms, -1);
-            if (tagWidth < 0) {
-                tagMaxEms = -1;
+            itemMaxEms = attrsArray.getInt(R.styleable.MultiLineChooseItemTags_item_maxEms, -1);
+            if (itemWidth < 0) {
+                itemMaxEms = -1;
             }
             
-            float radius = attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_tag_radius, 0);
-            float topLeftRadius = attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_tag_topLeftRadius, 0);
-            float topRightRadius = attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_tag_topRightRadius, 0);
-            float bottomLeftRadius = attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_tag_bottomLeftRadius,
+            float radius = attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_item_radius, 0);
+            float topLeftRadius = attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_item_topLeftRadius, 0);
+            float topRightRadius = attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_item_topRightRadius, 0);
+            float bottomLeftRadius = attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_item_bottomLeftRadius,
                     0);
-            float bottomRightRadius = attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_tag_bottomRightRadius,
-                    0);
+            float bottomRightRadius = attrsArray
+                    .getDimension(R.styleable.MultiLineChooseItemTags_item_bottomRightRadius, 0);
             
             if (topLeftRadius == 0 && topRightRadius == 0 && bottomLeftRadius == 0 && bottomRightRadius == 0) {
                 topLeftRadius = topRightRadius = bottomRightRadius = bottomLeftRadius = radius;
@@ -208,10 +183,10 @@ public class MultiLineChooseLayout extends ViewGroup {
             mRadius[4] = mRadius[5] = bottomRightRadius;
             mRadius[6] = mRadius[7] = bottomLeftRadius;
             
-            mStrokeColor = attrsArray.getColorStateList(R.styleable.MultiLineChooseItemTags_tag_strokeColor);
+            mStrokeColor = attrsArray.getColorStateList(R.styleable.MultiLineChooseItemTags_item_strokeColor);
             mCheckedStrokeColor = attrsArray
-                    .getColorStateList(R.styleable.MultiLineChooseItemTags_tag_checkedStrokeColor);
-            mStrokeWidth = (int) attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_tag_strokeWidth,
+                    .getColorStateList(R.styleable.MultiLineChooseItemTags_item_selectedStrokeColor);
+            mStrokeWidth = (int) attrsArray.getDimension(R.styleable.MultiLineChooseItemTags_item_strokeWidth,
                     mStrokeWidth);
             
         }
@@ -257,14 +232,11 @@ public class MultiLineChooseLayout extends ViewGroup {
                 rowWidth += horizontalSpacing;
             }
         }
-        // Account for the last row height.
         height += rowMaxHeight;
         
-        // Account for the padding too.
         height += getPaddingTop() + getPaddingBottom();
         
-        // If the tags grouped in one row, set the width to wrap the tags.
-        if (row == 0) {
+        if (row == 0) {//只有一行item
             width = rowWidth;
             width += getPaddingLeft() + getPaddingRight();
         }
@@ -314,8 +286,8 @@ public class MultiLineChooseLayout extends ViewGroup {
     public Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
         SavedState ss = new SavedState(superState);
-        ss.tags = getTags();
-        ss.checkedPosition = getCheckedTagIndex();
+        ss.tags = getAllItemText();
+        ss.checkedPosition = getSelectedIndex();
         return ss;
     }
     
@@ -330,20 +302,10 @@ public class MultiLineChooseLayout extends ViewGroup {
         super.onRestoreInstanceState(ss.getSuperState());
         
         setList(ss.tags);
-        ItemView checkedTagView = getTagAt(ss.checkedPosition);
+        ItemView checkedTagView = getIndexItem(ss.checkedPosition);
         if (checkedTagView != null) {
-            checkedTagView.setCheckedWithoutAnimal(true);
+            checkedTagView.setItemSelected(true);
         }
-    }
-    
-    /**
-     * Return the last NORMAL state tag view in this group.
-     *
-     * @return the last NORMAL state tag view or null if not exists
-     */
-    protected ItemView getLastTagView() {
-        final int lastNormalTagIndex = getChildCount() - 1;
-        return getTagAt(lastNormalTagIndex);
     }
     
     /**
@@ -351,11 +313,11 @@ public class MultiLineChooseLayout extends ViewGroup {
      *
      * @return the tag array.
      */
-    public String[] getTags() {
+    public String[] getAllItemText() {
         final int count = getChildCount();
         final List<String> tagList = new ArrayList<String>();
         for (int i = 0; i < count; i++) {
-            final ItemView tagView = getTagAt(i);
+            final ItemView tagView = getIndexItem(i);
             tagList.add(tagView.getText().toString());
         }
         
@@ -370,14 +332,13 @@ public class MultiLineChooseLayout extends ViewGroup {
     }
     
     /**
-     * Set the tags. It will remove all previous tags first.
-     *
-     * @param tags the tag list to set.
+     * 设置数据源
+     * @param tags
      */
     public void setList(String... tags) {
         removeAllViews();
         for (final String tag : tags) {
-            appendTag(tag);
+            addItem(tag);
         }
         
     }
@@ -387,7 +348,7 @@ public class MultiLineChooseLayout extends ViewGroup {
      * @param position
      * @return
      */
-    public int setDefaultPostionChecked(int position) {
+    public int setIndexItemSelected(int position) {
         
         int index = -1;
         final int count = getChildCount();
@@ -396,59 +357,53 @@ public class MultiLineChooseLayout extends ViewGroup {
             return -1;
         }
         
-        ItemView tagView = getTagAt(position);
-        tagView.setCheckedWithoutAnimal(true);
+        ItemView tagView = getIndexItem(position);
+        tagView.setItemSelected(true);
         index = position;
         return index;
     }
     
     /**
-     * Returns the tag view at the specified position in the group.
-     *
-     * @param index the position at which to get the tag view from.
-     * @return the tag view at the specified position or null if the position
-     * does not exists within this group.
+     * 返回指定的item
+     * @param index
+     * @return
      */
-    protected ItemView getTagAt(int index) {
+    protected ItemView getIndexItem(int index) {
         return null == getChildAt(index) ? null : (ItemView) getChildAt(index);
     }
     
     /**
-     * Returns the checked tag view in the group.单选时候有用,多选时候返回第一个
-     *
-     * @return the checked tag view or null if not exists.
+     * 返回选中的item
+     * @return
      */
-    protected ItemView getCheckedTag() {
-        final int checkedTagIndex = getCheckedTagIndex();
+    protected ItemView getSelectedItem() {
+        final int checkedTagIndex = getSelectedIndex();
         if (checkedTagIndex != -1) {
-            return getTagAt(checkedTagIndex);
+            return getIndexItem(checkedTagIndex);
         }
         return null;
     }
     
     /**
-     * Returns the checked tag view in the group.单选时候有用,多选时候返回第一个
-     *
-     * @return the checked tag view or null if not exists.
+     * 获取选中的item文字内容
+     * @return
      */
-    protected String getCheckedTagText() {
-        if (null != getCheckedTag()) {
-            return getCheckedTag().getText().toString();
+    protected String getSelectedItemText() {
+        if (null != getSelectedItem()) {
+            return getSelectedItem().getText().toString();
         }
         return null;
     }
     
     /**
-     * 返回选中的tag的文字
-     * Returns the tag array in group, except the INPUT tag.
-     *
-     * @return the tag array.
+     * 返回所有选中的tag的文字
+     * @return String
      */
-    public String[] getCheckedTagsText() {
+    public String[] getAllItemSelectedTextWithStringArray() {
         final int count = getChildCount();
         final List<String> tagList = new ArrayList<String>();
         for (int i = 0; i < count; i++) {
-            final ItemView tagView = getTagAt(i);
+            final ItemView tagView = getIndexItem(i);
             if (tagView.isChecked) {
                 tagList.add(tagView.getText().toString());
             }
@@ -458,16 +413,14 @@ public class MultiLineChooseLayout extends ViewGroup {
     }
     
     /**
-     * 返回选中的tag的文字
-     * Returns the tag array in group, except the INPUT tag.
-     *
-     * @return the tag array.
+     * 返回所有选中的tag的文字
+     * @return ListArray
      */
-    public ArrayList<String> getCheckedTagsTextsArrayList() {
+    public ArrayList<String> getAllItemSelectedTextWithListArray() {
         final int count = getChildCount();
         final ArrayList<String> tagList = new ArrayList<String>();
         for (int i = 0; i < count; i++) {
-            final ItemView tagView = getTagAt(i);
+            final ItemView tagView = getIndexItem(i);
             if (tagView.isChecked) {
                 tagList.add(tagView.getText().toString());
             }
@@ -477,15 +430,13 @@ public class MultiLineChooseLayout extends ViewGroup {
     }
     
     /**
-     * 单选时候有用,多选时候返回第一个
-     * Return the checked tag index.
-     *
-     * @return the checked tag index, or -1 if not exists.
+     * 返回选中的item下标
+     * @return
      */
-    public int getCheckedTagIndex() {
+    public int getSelectedIndex() {
         final int count = getChildCount();
         for (int i = 0; i < count; i++) {
-            final ItemView tag = getTagAt(i);
+            final ItemView tag = getIndexItem(i);
             if (tag.isChecked) {
                 return i;
             }
@@ -494,16 +445,14 @@ public class MultiLineChooseLayout extends ViewGroup {
     }
     
     /**
-     * 返回选中的tag的索引
-     * Returns the tag array in group, except the INPUT tag.
-     *
-     * @return the tag array.
+     * 返回所有选中的item的下标列表集合
+     * @return ArrayList
      */
-    public ArrayList<Integer> getCheckedTagsIndexArrayList() {
+    public ArrayList<Integer> getAllItemSelectedIndex() {
         final int count = getChildCount();
         final ArrayList<Integer> tagList = new ArrayList<Integer>();
         for (int i = 0; i < count; i++) {
-            final ItemView tagView = getTagAt(i);
+            final ItemView tagView = getIndexItem(i);
             if (tagView.isChecked) {
                 tagList.add(i);
             }
@@ -515,46 +464,31 @@ public class MultiLineChooseLayout extends ViewGroup {
     /**
      * 取消选中状态
      */
-    public void cancelAllSelectedItem() {
+    public void cancelAllSelectedItems() {
         final int count = getChildCount();
         for (int i = 0; i < count; i++) {
-            ItemView tag = getTagAt(i);
+            ItemView tag = getIndexItem(i);
             if (null != tag && tag.isChecked) {
-                tag.setCheckedWithoutAnimal(false);
+                tag.setItemSelected(false);
             }
         }
     }
     
     /**
-     * Register a callback to be invoked when this tag group is changed.
-     *
-     * @param l the callback that will run
+     * 增加item
+     * @param tag
      */
-    public void setOnTagChangeListener(OnTagChangeListener l) {
-        mOnTagChangeListener = l;
+    private void addItem(CharSequence tag) {
+        final ItemView item = new ItemView(getContext(), tag);
+        item.setOnClickListener(mInternalTagClickListener);
+        addView(item);
     }
     
-    /**
-     * Append tag to this group.
-     *
-     * @param tag the tag to append.
-     */
-    public void appendTag(CharSequence tag) {
-        final ItemView newTag = new ItemView(getContext(), tag);
-        //        if (singleLine) {
-        //            newTag.setEllipsize(TextUtils.TruncateAt.valueOf("END"));
-        //            newTag.setMaxEms(2);
-        //        }
-        //        newTag.setSingleLine(singleLine);
-        newTag.setOnClickListener(mInternalTagClickListener);
-        addView(newTag);
-    }
-    
-    public float dp2px(float dp) {
+    private float dp2px(float dp) {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
     }
     
-    public int sp2px(float sp) {
+    private int sp2px(float sp) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, getResources().getDisplayMetrics());
     }
     
@@ -563,49 +497,14 @@ public class MultiLineChooseLayout extends ViewGroup {
         return new MultiLineChooseLayout.LayoutParams(getContext(), attrs);
     }
     
-    /**
-     * Register a callback to be invoked when a tag is clicked.
-     *
-     * @param l the callback that will run.
-     */
-    public void setOnTagClickListener(OnTagClickListener l) {
-        mOnTagClickListener = l;
+    public void setOnItemClickListener(onItemClickListener l) {
+        mOnItemClickLisener = l;
     }
     
-    /**
-     * Interface definition for a callback to be invoked when a tag group is changed.
-     */
-    public interface OnTagChangeListener {
-        /**
-         * Called when a tag has been appended to the group.
-         *
-         * @param tag the appended tag.
-         */
-        void onAppend(MultiLineChooseLayout flowlayoutTags, String tag);
-        
-        /**
-         * Called when a tag has been deleted from the the group.
-         *
-         * @param tag the deleted tag.
-         */
-        void onDelete(MultiLineChooseLayout flowlayoutTags, String tag);
+    public interface onItemClickListener {
+        void onItemClick(int position, String text);
     }
     
-    /**
-     * Interface definition for a callback to be invoked when a tag is clicked.
-     */
-    public interface OnTagClickListener {
-        /**
-         * Called when a tag has been clicked.
-         *
-         * @param tag The tag text of the tag that was clicked.
-         */
-        void onTagClick(String tag);
-    }
-    
-    /**
-     * Per-child layout information for layouts.
-     */
     public static class LayoutParams extends ViewGroup.LayoutParams {
         public LayoutParams(Context c, AttributeSet attrs) {
             super(c, attrs);
@@ -658,52 +557,43 @@ public class MultiLineChooseLayout extends ViewGroup {
         }
     }
     
-    /**
-     * The tag view click listener for internal use.
-     */
-    class InternalTagClickListener implements OnClickListener {
+    class ItemClicker implements OnClickListener {
         @Override
         public void onClick(View v) {
             final ItemView tag = (ItemView) v;
-            
-            final ItemView checkedTag = getCheckedTag();
+            int position = -1;
+            final ItemView checkedTag = getSelectedItem();
             if (!multiChooseable) {
                 //单选
                 if (checkedTag != null) {
-                    checkedTag.setCheckedWithoutAnimal(false);
+                    checkedTag.setItemSelected(false);
                 }
                 
-                tag.setCheckedWithoutAnimal(true);
+                tag.setItemSelected(true);
+                position = getSelectedIndex();
             }
             else {
                 //多选
-                tag.setCheckedWithoutAnimal(!tag.isChecked);
+                tag.setItemSelected(!tag.isChecked);
+                position = -1;
             }
             
             //外部点击事件
-            if (mOnTagClickListener != null) {
-                mOnTagClickListener.onTagClick(tag.getText().toString());
+            if (mOnItemClickLisener != null) {
+                mOnItemClickLisener.onItemClick(position, tag.getText().toString());
             }
             
         }
     }
     
-    /**
-     * The tag view which has two states can be either NORMAL or INPUT.
-     */
     class ItemView extends TextView {
         
         private Context mContext;
         
         private boolean isChecked = false;
         
-        private boolean isPressed = false;
-        
         private Paint mBackgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         
-        /**
-         * Used to detect the touch event.
-         */
         private Rect mOutRect = new Rect();
         
         {
@@ -714,7 +604,7 @@ public class MultiLineChooseLayout extends ViewGroup {
             super(context);
             this.mContext = context;
             setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
-            setLayoutParams(new MultiLineChooseLayout.LayoutParams(tagWidth, tagHeight));
+            setLayoutParams(new MultiLineChooseLayout.LayoutParams(itemWidth, itemHeight));
             
             setGravity(Gravity.CENTER);
             
@@ -722,9 +612,9 @@ public class MultiLineChooseLayout extends ViewGroup {
             
             setSingleLine(singleLine);
             if (singleLine) {
-                if (tagMaxEms >= 0) {
+                if (itemMaxEms >= 0) {
                     setEllipsize(TextUtils.TruncateAt.valueOf("END"));
-                    setMaxEms(tagMaxEms);
+                    setMaxEms(itemMaxEms);
                 }
             }
             
@@ -738,10 +628,10 @@ public class MultiLineChooseLayout extends ViewGroup {
         /**
          * Set whether this tag view is in the checked state.
          *
-         * @param checked true is checked, false otherwise
+         * @param select true is checked, false otherwise
          */
-        public void setCheckedWithoutAnimal(boolean checked) {
-            isChecked = checked;
+        public void setItemSelected(boolean select) {
+            isChecked = select;
             invalidatePaint();
         }
         
@@ -750,22 +640,13 @@ public class MultiLineChooseLayout extends ViewGroup {
             return false;
         }
         
-        /**
-         * Indicates whether the input content is available.
-         *
-         * @return True if the input content is available, false otherwise.
-         */
-        public boolean isInputAvailable() {
-            return getText() != null && getText().length() > 0;
-        }
-        
         private void invalidatePaint() {
             
             animUpdateDrawable = false;
             
             if (isChecked) {
-                mBackgroundPaint.setColor(checkedBackgroundColor);
-                setTextColor(checkedTextColor);
+                mBackgroundPaint.setColor(selectedBackgroundColor);
+                setTextColor(selectedTextColor);
             }
             else {
                 mBackgroundPaint.setColor(backgroundColor);
@@ -792,7 +673,7 @@ public class MultiLineChooseLayout extends ViewGroup {
             
             int mbackgroundColor;
             if (isChecked) {
-                mbackgroundColor = checkedBackgroundColor;
+                mbackgroundColor = selectedBackgroundColor;
             }
             else {
                 mbackgroundColor = backgroundColor;
@@ -817,53 +698,24 @@ public class MultiLineChooseLayout extends ViewGroup {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN: {
                     getDrawingRect(mOutRect);
-                    isPressed = true;
                     invalidatePaint();
                     invalidate();
                     break;
                 }
                 case MotionEvent.ACTION_MOVE: {
                     if (!mOutRect.contains((int) event.getX(), (int) event.getY())) {
-                        isPressed = false;
                         invalidatePaint();
                         invalidate();
                     }
                     break;
                 }
                 case MotionEvent.ACTION_UP: {
-                    isPressed = false;
                     invalidatePaint();
                     invalidate();
                     break;
                 }
             }
             return super.onTouchEvent(event);
-        }
-        
-        @Override
-        public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-            return new ZanyInputConnection(super.onCreateInputConnection(outAttrs), true);
-        }
-        
-        /**
-         * Solve edit text delete(backspace) key detect, see<a href="http://stackoverflow.com/a/14561345/3790554">
-         * Android: Backspace in WebView/BaseInputConnection</a>
-         */
-        private class ZanyInputConnection extends InputConnectionWrapper {
-            public ZanyInputConnection(android.view.inputmethod.InputConnection target, boolean mutable) {
-                super(target, mutable);
-            }
-            
-            @Override
-            public boolean deleteSurroundingText(int beforeLength, int afterLength) {
-                // magic: in latest Android, deleteSurroundingText(1, 0) will be called for backspace
-                if (beforeLength == 1 && afterLength == 0) {
-                    // backspace
-                    return sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
-                            && sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
-                }
-                return super.deleteSurroundingText(beforeLength, afterLength);
-            }
         }
     }
 }
