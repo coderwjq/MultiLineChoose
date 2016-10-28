@@ -29,14 +29,12 @@ compile 'liji.library.dev:multilinechooselib:1.4.0'
 >  代码清单 activity_main.xml
 
 ```
-<com.ihidea.multilinechooselib.MultiLineChooseLayout
+            <com.ihidea.multilinechooselib.MultiLineChooseLayout
                 android:id="@+id/flowLayout"
                 style="@style/FlowLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/textSingleLine"
                 android:layout_marginTop="5dp">
-
             </com.ihidea.multilinechooselib.MultiLineChooseLayout>
 ```
 
