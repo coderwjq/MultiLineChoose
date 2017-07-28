@@ -20,7 +20,7 @@
 **gradle引用**
 
 ```
-compile 'liji.library.dev:multilinechooselib:1.4.0'
+compile 'liji.library.dev:multilinechooselib:1.6.0'
 ```
 
 
@@ -36,6 +36,17 @@ compile 'liji.library.dev:multilinechooselib:1.4.0'
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp">
             </com.ihidea.multilinechooselib.MultiLineChooseLayout>
+```
+
+### 更新说明
+
+####  V1.6.0版本更新内容（2017.07.28）
+1. 增加item是否可以点击属性
+
+```
+
+<!--是否可以点击-->
+<attr name="item_click" format="boolean"/>
 ```
 
 >代码清单  style.xml 自定义属性设置
