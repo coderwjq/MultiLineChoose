@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.ihidea.multilinechooselib.MultiLineChooseLayout;
 
@@ -60,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         //单选
         singleChoose.setOnItemClickListener(new MultiLineChooseLayout.onItemClickListener() {
             @Override
-            public void onItemClick(int position, String text) {
+            public void onItemClick(int position, String text, boolean isChecked) {
                 singleChooseTv.setText("结果：position: " + position + "   " + text);
             }
         });
@@ -68,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         //多选
         multiChoose.setOnItemClickListener(new MultiLineChooseLayout.onItemClickListener() {
             @Override
-            public void onItemClick(int position, String text) {
+            public void onItemClick(int position, String text, boolean isChecked) {
                 multiChooseResult = multiChoose.getAllItemSelectedTextWithListArray();
                 if (multiChooseResult != null && multiChooseResult.size() > 0) {
                     String textSelect = "";
@@ -83,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         //流式布局
         flowLayout.setOnItemClickListener(new MultiLineChooseLayout.onItemClickListener() {
             @Override
-            public void onItemClick(int position, String text) {
+            public void onItemClick(int position, String text, boolean isChecked) {
                 flowLayoutResult = flowLayout.getAllItemSelectedTextWithListArray();
                 if (flowLayoutResult != null && flowLayoutResult.size() > 0) {
                     String textSelect = "";
